@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>IEMY — Buy and sell anything</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-900:#0A1730; --navy-800:#122544; --navy-700:#1C3868;
+    --gold-500:#C9962F; --gold-400:#DDB255; --gold-100:#F6E8C8;
+    --silver-300:#C9CED3;
+    --bg:#F2F4F8; --card:#FFFFFF; --ink:#152238; --ink-soft:#4C5768; --muted:#828B9B;
+    --border:#E2E6ED; --alert:#B23B3B; --alert-tint:#F6E3E1; --success-tint:#E4F0E7;
+    --shadow:0 1px 0 rgba(10,23,48,.05);
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0B1220; --card:#121B2E; --ink:#EDF0F5; --ink-soft:#B7C0CF; --muted:#7C8698;
+      --border:#233150; --navy-900:#070E1D; --navy-800:#0E1B33; --alert-tint:#33201D; --success-tint:#16281C;
+      --shadow:0 1px 0 rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0B1220; --card:#121B2E; --ink:#EDF0F5; --ink-soft:#B7C0CF; --muted:#7C8698;
+    --border:#233150; --navy-900:#070E1D; --navy-800:#0E1B33; --alert-tint:#33201D; --success-tint:#16281C;
+  }
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  [dir="rtl"] body{font-family:'Inter','Tahoma',sans-serif;}
+  h1,h2,h3,.serif{font-family:'Fraunces',Georgia,serif; font-weight:700; letter-spacing:-0.01em; margin:0;}
+  a{color:inherit;}
+  button{font-family:inherit;}
+  ::selection{background:var(--gold-100); color:var(--navy-900);}
+  :focus-visible{outline:2px solid var(--gold-500); outline-offset:2px;}
+  .wrap{max-width:1200px; margin:0 auto; padding-inline:20px;}
+  img{max-width:100%;}
+
+  /* ===== header ===== */
+  header{position:sticky; top:0; z-index:40; padding-top:env(safe-area-inset-top,0px); background:var(--navy-900);}
+  .topbar{
+    display:flex; align-items:center; gap:16px; padding:12px 20px; max-width:1200px; margin:0 auto;
+  }
+  .logo{display:flex; align-items:center; gap:0; flex-shrink:0; cursor:pointer; background:none; border:none; padding:0;}
+  .logo img{height:42px; width:auto; display:block; border-radius:4px;}
+  .searchbox{
+    flex:1; display:flex; align-items:center; gap:8px; background:#fff; border-radius:999px; padding:9px 16px; min-width:0;
+  }
+  .searchbox input{border:none; outline:none; background:none; width:100%; font-size:14px; color:var(--ink); font-family:inherit;}
+  .searchbox svg{flex-shrink:0; color:var(--muted);}
+  .headbtns{display:flex; align-items:center; gap:8px; flex-shrink:0;}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px; border-radius:8px; border:1px solid transparent;
+    cursor:pointer; font-size:14px; font-weight:600; padding:9px 16px; transition:filter .15s, background .15s, border-color .15s; white-space:nowrap;
+  }
+  .btn-gold{background:linear-gradient(180deg,var(--gold-400),var(--gold-500)); color:#28210A;}
+  .btn-gold:hover{filter:brightness(1.06);}
+  .btn-ghost-dark{background:rgba(255,255,255,.06); color:#EDEFF3; border-color:rgba(255,255,255,.18);}
+  .btn-ghost-dark:hover{border-color:var(--gold-400);}
+  .btn-ghost{background:transparent; color:var(--ink); border-color:var(--border);}
+  .btn-ghost:hover{border-color:var(--gold-500);}
+  .btn-danger{background:none; color:var(--alert); border-color:var(--alert-tint);}
+  .btn-danger:hover{background:var(--alert-tint);}
+  .btn-block{width:100%; padding:12px;}
+  .btn:disabled{opacity:.5; cursor:not-allowed;}
+  select.langsel{
+    background:rgba(255,255,255,.06); color:#EDEFF3; border:1px solid rgba(255,255,255,.18); border-radius:8px;
+    padding:9px 10px; font-size:13px; font-family:inherit; cursor:pointer;
+  }
+  select.langsel option{color:#000;}
+
+  .avatar{
+    width:32px; height:32px; border-radius:50%; background:var(--gold-100); color:var(--navy-800);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; flex-shrink:0;
+  }
+  .user-chip{display:flex; align-items:center; gap:8px; cursor:pointer; background:none; border:none; padding:2px; border-radius:999px;}
+  .user-chip span{font-size:13.5px; font-weight:600; color:#EDEFF3; display:none;}
+  @media(min-width:640px){ .user-chip span{display:inline;} }
+
+  /* category + city bars */
+  .catbar-outer{background:var(--navy-800); border-top:1px solid rgba(255,255,255,.06);}
+  .scrollrow{display:flex; gap:8px; overflow-x:auto; padding:10px 20px; max-width:1200px; margin:0 auto; scrollbar-width:none;}
+  .scrollrow::-webkit-scrollbar{display:none;}
+  .catchip{
+    flex-shrink:0; display:flex; align-items:center; gap:6px; padding:7px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.04); color:#DDE2EA; font-size:13px; font-weight:500; cursor:pointer; transition:all .15s;
+  }
+  .catchip.active{background:var(--gold-500); border-color:var(--gold-500); color:#221B08;}
+  .catchip:hover:not(.active){border-color:var(--gold-400);}
+  .citybar-outer{background:var(--bg); border-bottom:1px solid var(--border);}
+  .citychip{
+    flex-shrink:0; padding:6px 13px; border-radius:999px; border:1px solid var(--border); background:var(--card);
+    color:var(--ink-soft); font-size:12.5px; font-weight:500; cursor:pointer; transition:all .15s;
+  }
+  .citychip.active{background:var(--navy-800); border-color:var(--navy-800); color:#fff;}
+  .citychip:hover:not(.active){border-color:var(--navy-800);}
+
+  main{padding-bottom:80px; min-height:60vh;}
+
+  /* hero */
+  .hero{background:radial-gradient(circle at 50% 20%,#163b73 0%,var(--navy-900) 55%,#050b18 100%); color:#F1EFE6; position:relative; overflow:hidden;}
+  .hero::before{content:""; position:absolute; width:620px; height:620px; border-radius:50%; left:50%; top:-310px; transform:translateX(-50%); background:radial-gradient(circle,rgba(36,115,205,.16),transparent 68%); pointer-events:none;}
+  .hero .wrap{padding-block:42px; max-width:1200px; position:relative; z-index:2;}
+  .hero-grid{display:grid; grid-template-columns:minmax(0,1.05fr) minmax(420px,.95fr); align-items:center; gap:42px;}
+  @media(max-width:860px){ .hero .wrap{padding-block:28px;} .hero-grid{grid-template-columns:1fr; gap:20px;} .hero-copy{order:2; text-align:center;} .hero-copy .lede{margin-inline:auto;} .hero .cta-row{justify-content:center;} }
+  .hero h1{color:#F5F3EA; font-size:clamp(28px,4vw,44px); line-height:1.08;}
+  .hero p.lede{color:#C6CEDD; font-size:15.5px; line-height:1.6; max-width:50ch; margin-top:14px;}
+  .hero .cta-row{display:flex; gap:12px; margin-top:22px; flex-wrap:wrap;}
+
+  /* ===== IEMY spinning GCC globe ===== */
+  .iemy-globe-wrap{display:flex; align-items:center; justify-content:center; min-height:420px; perspective:1000px;}
+  .iemy-globe{width:min(430px,82vw); aspect-ratio:1; position:relative; border-radius:50%; transform-style:preserve-3d; animation:globeFloat 5s ease-in-out infinite;}
+  .iemy-earth{position:absolute; inset:8%; border-radius:50%; overflow:hidden; background:
+      radial-gradient(circle at 35% 28%,rgba(255,255,255,.35),transparent 7%),
+      radial-gradient(circle at 62% 48%,rgba(255,211,88,.28),transparent 18%),
+      radial-gradient(circle at 38% 64%,rgba(24,101,181,.55),transparent 28%),
+      radial-gradient(circle at 50% 50%,#123a70 0%,#061a36 62%,#020916 100%);
+      box-shadow:0 0 35px rgba(51,157,255,.55), inset -24px -18px 50px rgba(0,0,0,.7), inset 18px 12px 40px rgba(80,180,255,.28);
+      border:2px solid rgba(92,190,255,.65);}
+  .iemy-earth::before,.iemy-earth::after{content:""; position:absolute; inset:-15%; border-radius:50%; border:1px solid rgba(255,204,80,.28); transform:rotate(28deg) scaleY(.55);}
+  .iemy-earth::after{transform:rotate(-28deg) scaleY(.55); border-color:rgba(76,177,255,.25);}
+  .globe-land{position:absolute; inset:0; background:
+      radial-gradient(ellipse at 61% 40%,rgba(229,178,61,.8) 0 5%,transparent 6%),
+      radial-gradient(ellipse at 54% 48%,rgba(229,178,61,.75) 0 4%,transparent 5%),
+      radial-gradient(ellipse at 70% 51%,rgba(229,178,61,.65) 0 3%,transparent 4%),
+      radial-gradient(ellipse at 49% 57%,rgba(229,178,61,.72) 0 3%,transparent 4%),
+      radial-gradient(ellipse at 36% 35%,rgba(229,178,61,.48) 0 5%,transparent 6%);
+      opacity:.9; filter:blur(.2px); animation:landDrift 10s linear infinite;}
+  .globe-logo{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:4; transform:translateZ(45px);}
+  .globe-logo span{font-family:'Fraunces',Georgia,serif; font-weight:800; font-size:clamp(60px,9vw,102px); letter-spacing:-.08em; font-style:italic; background:linear-gradient(180deg,#fff5bb 0%,#f6c64d 32%,#b9780f 68%,#fff0a0 100%); -webkit-background-clip:text; background-clip:text; color:transparent; text-shadow:0 8px 22px rgba(0,0,0,.65),0 0 18px rgba(255,202,63,.28);}
+  .globe-logo::after{content:""; position:absolute; width:62%; height:12px; border-top:5px solid #f1c653; border-radius:50%; transform:rotate(-12deg) translateY(32px); box-shadow:0 3px 7px rgba(0,0,0,.5);}
+  .orbit{position:absolute; inset:-8%; border:2px solid rgba(255,202,63,.72); border-radius:50%; transform:rotate(-18deg) scaleY(.48); z-index:5; pointer-events:none; animation:orbitSpin 7s linear infinite;}
+  .orbit.orbit2{inset:-16%; border-color:rgba(71,179,255,.5); transform:rotate(62deg) scaleY(.34); animation-duration:11s; animation-direction:reverse;}
+  .orbit.orbit3{inset:-25%; border-color:rgba(255,210,92,.28); transform:rotate(25deg) scaleY(.2); animation-duration:15s;}
+  .orbit-dot{position:absolute; width:12px; height:12px; border-radius:50%; background:#ffd65c; box-shadow:0 0 15px #ffd65c; top:4%; left:50%; transform:translateX(-50%);}
+  .gcc-country{position:absolute; z-index:8; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10px; font-weight:800; color:#fff; text-shadow:0 2px 5px #000; animation:countryFloat 4s ease-in-out infinite;}
+  .gcc-country b{width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:#08162c; border:2px solid #f2c34c; box-shadow:0 0 12px rgba(255,204,77,.35); font-size:22px;}
+  .gcc-sa{top:-2%; left:7%;}.gcc-kw{top:23%; left:-9%; animation-delay:-.6s}.gcc-bh{bottom:17%; left:-7%; animation-delay:-1.2s}.gcc-qa{bottom:-3%; left:18%; animation-delay:-1.8s}.gcc-ae{top:8%; right:-8%; animation-delay:-2.4s}.gcc-om{bottom:10%; right:-7%; animation-delay:-3s}
+  @keyframes orbitSpin{from{rotate:0deg}to{rotate:360deg}}
+  @keyframes globeFloat{0%,100%{transform:translateY(0) rotateX(0deg)}50%{transform:translateY(-8px) rotateX(2deg)}}
+  @keyframes landDrift{from{transform:translateX(-3%)}50%{transform:translateX(3%)}to{transform:translateX(-3%)}}
+  @keyframes countryFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  @media(prefers-reduced-motion:reduce){.iemy-globe,.globe-land,.orbit,.gcc-country{animation:none!important;}}
+
+  .wordmark{font-family:'Fraunces',Georgia,serif; font-weight:700; letter-spacing:-0.01em; color:var(--gold-400); line-height:1;}
+  .logo .wordmark{font-size:26px; color:var(--gold-400);}
+  .auth-wordmark{font-size:34px; color:var(--gold-400); margin-bottom:10px;}
+  .footer-wordmark{font-size:18px; color:var(--navy-800); margin-bottom:6px;}
+  :root[data-theme="dark"] .footer-wordmark, @media (prefers-color-scheme:dark){ .footer-wordmark{color:var(--gold-400);} }
+
+  /* premium strip */
+  .premium-strip-outer{background:var(--gold-100); border-bottom:1px solid var(--gold-400);}
+  :root[data-theme="dark"] .premium-strip-outer{background:#241D0C;}
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .premium-strip-outer{background:#241D0C;} }
+  .premium-head{display:flex; align-items:center; gap:8px; padding:14px 20px 0; max-width:1200px; margin:0 auto; color:var(--navy-900); font-weight:700; font-size:14px;}
+  :root[data-theme="dark"] .premium-head, @media (prefers-color-scheme:dark){ .premium-head{color:var(--gold-400);} }
+  .pstrip{display:flex; gap:12px; overflow-x:auto; padding:12px 20px 16px; max-width:1200px; margin:0 auto; scrollbar-width:none;}
+  .pstrip::-webkit-scrollbar{display:none;}
+  .pcard{
+    flex-shrink:0; width:180px; background:var(--card); border:1.5px solid var(--gold-500); border-radius:10px; overflow:hidden; cursor:pointer;
+  }
+  .pcard .thumb{aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; font-size:34px; color:#fff; position:relative;}
+  .pcard .thumb img{width:100%; height:100%; object-fit:cover;}
+  .pcard .badge{position:absolute; top:6px; inset-inline-start:6px; background:var(--gold-500); color:#241D0C; font-size:9.5px; font-weight:800; padding:2px 7px; border-radius:4px; letter-spacing:.02em;}
+  .pcard .body{padding:9px 10px 11px;}
+  .pcard .price{font-weight:800; font-size:14.5px; color:var(--navy-800);}
+  :root[data-theme="dark"] .pcard .price{color:var(--gold-400);}
+  .pcard .title{font-size:12px; margin-top:3px; color:var(--ink); line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+
+  /* feed section */
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; padding:20px 0 10px; gap:12px; flex-wrap:wrap;}
+  .section-head h2{font-size:20px;}
+  .section-head .count{font-size:12.5px; color:var(--muted);}
+  select.sortsel{border:1px solid var(--border); background:var(--card); border-radius:6px; padding:7px 10px; font-size:12.5px; color:var(--ink-soft); font-family:inherit;}
+
+  .feed{display:flex; flex-direction:column; gap:8px;}
+  .row{
+    display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:10px 14px; cursor:pointer; transition:border-color .15s;
+  }
+  .row:hover{border-color:var(--navy-800);}
+  .row .thumb{
+    width:58px; height:58px; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px; overflow:hidden; position:relative;
+  }
+  .row .thumb img{width:100%; height:100%; object-fit:cover;}
+  .row .info{flex:1; min-width:0;}
+  .row .title{font-size:14px; font-weight:600; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .row .meta{font-size:12px; color:var(--muted); margin-top:3px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .row .meta .dot{opacity:.5;}
+  .row .price-wrap{flex-shrink:0; text-align:end;}
+  .row .price{font-weight:800; font-size:15px; color:var(--navy-800);}
+  :root[data-theme="dark"] .row .price{color:var(--gold-400);}
+  .sold-pill{font-size:10.5px; font-weight:800; color:var(--alert); background:var(--alert-tint); padding:2px 8px; border-radius:4px;}
+
+  .empty{text-align:center; padding:56px 20px; color:var(--muted); border:1px dashed var(--border); border-radius:8px;}
+  .empty .serif{font-size:18px; color:var(--ink-soft); margin-bottom:8px;}
+
+  /* views */
+  .view{display:none;}
+  .view.active{display:block;}
+
+  /* auth */
+  .authshell{max-width:920px; margin:32px auto; display:grid; grid-template-columns:1fr 1.1fr; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:var(--card);}
+  @media(max-width:760px){ .authshell{grid-template-columns:1fr; margin:0;} }
+  .authpanel{background:linear-gradient(160deg,var(--navy-900),var(--navy-800)); color:#F1EFE6; padding:40px 32px; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;}
+  .authpanel img{width:150px; margin-bottom:14px;}
+  .authpanel h2{color:#F5F3EA; font-size:23px;}
+  .authpanel p{color:#C6CEDD; font-size:13.5px; line-height:1.6; margin-top:10px;}
+  .authform{padding:40px 32px;}
+  @media(max-width:760px){ .authform{padding:28px 24px;} .authpanel{padding:28px 24px;} }
+  .field{margin-bottom:15px;}
+  .field label{display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:6px; font-size:14px; background:var(--bg); color:var(--ink); font-family:inherit;
+  }
+  .field textarea{resize:vertical; min-height:90px;}
+  .field .hint{font-size:11.5px; color:var(--muted); margin-top:5px;}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .formerr{color:var(--alert); font-size:13px; margin-bottom:12px; display:none;}
+  .switcher{margin-top:14px; font-size:13.5px; color:var(--ink-soft); text-align:center;}
+  .switcher button{background:none; border:none; color:var(--navy-800); font-weight:700; cursor:pointer; padding:0; font-size:inherit; font-family:inherit;}
+  :root[data-theme="dark"] .switcher button{color:var(--gold-400);}
+
+  /* sell / post-ad */
+  .plan-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:22px;}
+  @media(max-width:480px){ .plan-grid{grid-template-columns:1fr 1fr;} }
+  .plancard .ptag{display:inline-block; font-size:10.5px; font-weight:700; letter-spacing:.03em; text-transform:uppercase; color:var(--gold-500); background:var(--gold-100); border-radius:5px; padding:2px 7px; margin-top:6px;}
+  .plancard{border:2px solid var(--border); border-radius:10px; padding:18px; cursor:pointer; background:var(--card); transition:border-color .15s;}
+  .plancard.selected{border-color:var(--navy-800);}
+  .plancard.premium.selected{border-color:var(--gold-500);}
+  .plancard .pname{font-size:16px; font-weight:800;}
+  .plancard.premium .pname{color:var(--gold-500);}
+  .plancard .pprice{font-size:22px; font-weight:800; margin-top:6px;}
+  .plancard .pdesc{font-size:12.5px; color:var(--muted); margin-top:8px; line-height:1.5;}
+  .plancard .pcheck{float:inline-end; width:20px; height:20px; border-radius:50%; border:2px solid var(--border); display:inline-block;}
+  .plancard.selected .pcheck{border-color:var(--navy-800); background:var(--navy-800);}
+  .plancard.premium.selected .pcheck{border-color:var(--gold-500); background:var(--gold-500);}
+
+  .sellgrid{display:grid; grid-template-columns:1.1fr 0.8fr; gap:28px; margin-top:6px;}
+  @media(max-width:860px){ .sellgrid{grid-template-columns:1fr;} }
+  .panel{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:24px;}
+  .imgpicker{border:1.5px dashed var(--border); border-radius:8px; padding:18px; text-align:center; cursor:pointer; color:var(--muted); font-size:13px; position:relative; overflow:hidden; background:var(--bg);}
+  .imgpicker img{max-width:100%; max-height:170px; border-radius:6px;}
+  .imgpicker input{position:absolute; inset:0; opacity:0; cursor:pointer;}
+  .preview-label{font-size:12px; color:var(--muted); margin-bottom:10px; font-weight:700;}
+
+  /* payment modal */
+  .paybox{max-width:380px; margin:80px auto; background:var(--card); border-radius:12px; padding:26px; text-align:center;}
+  .paybox .amt{font-size:30px; font-weight:800; color:var(--gold-500); margin:14px 0;}
+
+  /* my listings */
+  .page-title{padding:26px 0 4px;}
+  .page-title h2{font-size:22px;}
+  .page-title p{color:var(--muted); font-size:13.5px; margin-top:6px;}
+  .mylist-item{display:flex; gap:14px; align-items:center; padding:14px; border:1px solid var(--border); border-radius:8px; background:var(--card); margin-bottom:10px; flex-wrap:wrap;}
+  .mylist-item .thumb-sm{width:58px; height:58px; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:20px; overflow:hidden;}
+  .mylist-item .thumb-sm img{width:100%; height:100%; object-fit:cover;}
+  .mylist-item .mi-body{flex:1; min-width:160px;}
+  .mylist-item .mi-title{font-weight:700; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .mylist-item .mi-meta{font-size:11.5px; color:var(--muted); margin-top:3px;}
+  .mi-actions{display:flex; gap:6px; flex-wrap:wrap;}
+  .status-pill{font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:4px; margin-inline-start:8px;}
+  .status-active{background:var(--success-tint); color:#2E7D4F;}
+  .status-expiring{background:var(--gold-100); color:#8A6416;}
+  .status-expired{background:var(--alert-tint); color:var(--alert);}
+  .status-sold{background:var(--border); color:var(--ink-soft);}
+
+  /* modal */
+  .overlay{position:fixed; inset:0; background:rgba(7,14,29,.6); z-index:100; display:none; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto;}
+  .overlay.active{display:flex;}
+  .modal{background:var(--card); border-radius:12px; max-width:760px; width:100%; overflow:hidden; display:grid; grid-template-columns:1fr 1fr;}
+  @media(max-width:640px){ .modal{grid-template-columns:1fr;} }
+  .modal .mimg{aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; font-size:60px; color:#fff; position:relative;}
+  .modal .mimg img{width:100%; height:100%; object-fit:cover;}
+  .modal .mbody{padding:26px; position:relative; display:flex; flex-direction:column;}
+  .modal .close{position:absolute; top:14px; inset-inline-end:14px; background:var(--bg); border:1px solid var(--border); border-radius:50%; width:30px; height:30px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--ink-soft);}
+  .modal .mprice{font-size:24px; color:var(--navy-800); font-weight:800;}
+  :root[data-theme="dark"] .modal .mprice{color:var(--gold-400);}
+  .modal .mtitle{margin-top:8px; font-size:18px;}
+  .modal .mmeta{font-size:12.5px; color:var(--muted); margin-top:8px;}
+  .modal .mdesc{font-size:13.5px; color:var(--ink-soft); line-height:1.6; margin-top:14px; flex:1;}
+  .modal .seller-box{margin-top:16px; padding-top:14px; border-top:1px solid var(--border); display:flex; align-items:center; gap:10px;}
+  .modal .actions{margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;}
+  .contact-reveal{margin-top:12px; padding:10px 12px; background:var(--success-tint); border-radius:6px; font-size:13px; display:none;}
+
+  #toast{
+    position:fixed; bottom:calc(24px + env(safe-area-inset-bottom,0px)); left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--navy-900); color:#F1EFE6; padding:11px 20px; border-radius:8px; font-size:13.5px; font-weight:500;
+    opacity:0; pointer-events:none; transition:opacity .2s, transform .2s; z-index:200; max-width:90vw; text-align:center;
+  }
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  footer{border-top:1px solid var(--border); padding:24px 0; text-align:center; color:var(--muted); font-size:12px;}
+  footer img{height:26px; margin-bottom:8px; opacity:.85;}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="topbar">
+    <button class="logo" id="logoBtn" aria-label="IEMY home"><span class="wordmark">IEMY</span></button>
+    <div class="searchbox">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="searchInput" type="text" data-i18n-ph="search_placeholder">
+    </div>
+    <div class="headbtns">
+      <select class="langsel" id="langSel">
+        <option value="en">English</option>
+        <option value="ar">العربية</option>
+        <option value="ur">اردو</option>
+        <option value="fr">Français</option>
+      </select>
+      <button class="btn btn-gold" id="sellBtn" data-i18n="nav_sell"></button>
+      <div id="authArea"></div>
+    </div>
+  </div>
+  <div class="catbar-outer">
+    <div class="scrollrow" id="categoryBar"></div>
+  </div>
+</header>
+<div class="citybar-outer">
+  <div class="scrollrow" id="cityBar"></div>
+</div>
+
+<main>
+
+  <!-- HOME VIEW -->
+  <div class="view active" id="view-home">
+    <section class="hero">
+      <div class="wrap">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <h1 data-i18n="hero_title"></h1>
+            <p class="lede" data-i18n="hero_sub"></p>
+            <div class="cta-row">
+              <button class="btn btn-gold" id="heroSellBtn" data-i18n="hero_cta_sell"></button>
+              <button class="btn btn-ghost-dark" id="heroBrowseBtn" data-i18n="hero_cta_browse"></button>
+            </div>
+          </div>
+          <div class="iemy-globe-wrap" aria-label="IEMY GCC marketplace globe">
+            <div class="iemy-globe">
+              <div class="iemy-earth"><div class="globe-land"></div></div>
+              <div class="globe-logo"><span>IEMY</span></div>
+              <div class="orbit"><i class="orbit-dot"></i></div>
+              <div class="orbit orbit2"><i class="orbit-dot"></i></div>
+              <div class="orbit orbit3"></div>
+              <div class="gcc-country gcc-sa"><b>🇸🇦</b><span>Saudi Arabia</span></div>
+              <div class="gcc-country gcc-kw"><b>🇰🇼</b><span>Kuwait</span></div>
+              <div class="gcc-country gcc-bh"><b>🇧🇭</b><span>Bahrain</span></div>
+              <div class="gcc-country gcc-qa"><b>🇶🇦</b><span>Qatar</span></div>
+              <div class="gcc-country gcc-ae"><b>🇦🇪</b><span>UAE</span></div>
+              <div class="gcc-country gcc-om"><b>🇴🇲</b><span>Oman</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="premium-strip-outer" id="premiumOuter" style="display:none;">
+      <div class="premium-head">★ <span data-i18n="section_premium"></span></div>
+      <div class="pstrip" id="premiumStrip"></div>
+    </div>
+
+    <div class="wrap">
+      <div class="section-head">
+        <h2 data-i18n="section_feed"></h2>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="count" id="resultCount"></span>
+          <select class="sortsel" id="sortSel">
+            <option value="new" data-i18n="sort_new"></option>
+            <option value="low" data-i18n="sort_low"></option>
+            <option value="high" data-i18n="sort_high"></option>
+          </select>
+        </div>
+      </div>
+      <div class="feed" id="productFeed"></div>
+      <div class="empty" id="emptyState" style="display:none;">
+        <div class="serif" data-i18n="empty_title"></div>
+        <div data-i18n="empty_sub"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SELL VIEW -->
+  <div class="view" id="view-sell">
+    <div class="wrap">
+      <div class="page-title">
+        <h2 data-i18n="post_title"></h2>
+        <p data-i18n="post_sub"></p>
+      </div>
+
+      <div class="plan-grid" id="planGrid"></div>
+
+      <div class="sellgrid">
+        <form class="panel" id="sellForm">
+          <div class="formerr" id="sellErr"></div>
+          <div class="field">
+            <label data-i18n="form_title"></label>
+            <input id="s-title" type="text" maxlength="70" required>
+          </div>
+          <div class="field">
+            <label data-i18n="form_phone"></label>
+            <input id="s-phone" type="tel" placeholder="05xxxxxxxx" required>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label data-i18n="form_category"></label>
+              <select id="s-category" required></select>
+            </div>
+            <div class="field">
+              <label data-i18n="form_condition"></label>
+              <select id="s-condition" required></select>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label data-i18n="form_price"></label>
+              <input id="s-price" type="number" min="0" step="1" placeholder="0" required>
+            </div>
+            <div class="field">
+              <label data-i18n="form_city"></label>
+              <select id="s-city" required></select>
+            </div>
+          </div>
+          <div class="field">
+            <label data-i18n="form_desc"></label>
+            <textarea id="s-desc" maxlength="600" required></textarea>
+          </div>
+          <div class="field">
+            <label data-i18n="form_photo"></label>
+            <label class="imgpicker" id="imgPickerLabel">
+              <span id="imgPickerText" data-i18n="form_photo"></span>
+              <input type="file" id="s-image" accept="image/*">
+            </label>
+            <div class="hint" data-i18n="form_photo_hint"></div>
+          </div>
+          <button type="submit" class="btn btn-gold btn-block" data-i18n="form_publish"></button>
+        </form>
+
+        <div class="panel">
+          <div class="preview-label">Preview</div>
+          <div class="feed" style="max-width:300px;">
+            <div class="row" id="previewCard" style="cursor:default;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MY LISTINGS VIEW -->
+  <div class="view" id="view-mine">
+    <div class="wrap">
+      <div class="page-title">
+        <h2 data-i18n="mylistings_title"></h2>
+        <p data-i18n="mylistings_sub"></p>
+      </div>
+      <div id="myListWrap"></div>
+    </div>
+  </div>
+
+  <!-- AUTH VIEW -->
+  <div class="view" id="view-auth">
+    <div class="wrap">
+      <div class="authshell">
+        <div class="authpanel">
+          <div class="wordmark auth-wordmark">IEMY</div>
+          <h2 class="serif" data-i18n="auth_welcome_title"></h2>
+          <p data-i18n="auth_welcome_body"></p>
+          <p style="margin-top:18px; color:var(--gold-400); font-size:12px;" data-i18n="auth_demo_note"></p>
+        </div>
+        <div class="authform">
+          <div id="loginForm">
+            <h2 style="font-size:19px; margin-bottom:16px;" data-i18n="login_title"></h2>
+            <div class="formerr" id="loginErr"></div>
+            <div class="field"><label data-i18n="login_username"></label><input id="li-username" type="text" autocomplete="username"></div>
+            <div class="field"><label data-i18n="login_password"></label><input id="li-password" type="password" autocomplete="current-password"></div>
+            <button class="btn btn-gold btn-block" id="loginSubmit" data-i18n="login_submit"></button>
+            <div class="switcher"><span data-i18n="login_switch_pre"></span> <button id="toRegister" data-i18n="login_switch_link"></button></div>
+          </div>
+          <div id="registerForm" style="display:none;">
+            <h2 style="font-size:19px; margin-bottom:16px;" data-i18n="register_title"></h2>
+            <div class="formerr" id="regErr"></div>
+            <div class="field"><label data-i18n="register_name"></label><input id="r-name" type="text" autocomplete="name"></div>
+            <div class="field-row">
+              <div class="field"><label data-i18n="register_username"></label><input id="r-username" type="text" autocomplete="username"></div>
+              <div class="field"><label data-i18n="register_phone"></label><input id="r-phone" type="tel" placeholder="05xxxxxxxx" autocomplete="tel"></div>
+            </div>
+            <div class="field"><label data-i18n="register_password"></label><input id="r-password" type="password" autocomplete="new-password"></div>
+            <button class="btn btn-gold btn-block" id="registerSubmit" data-i18n="register_submit"></button>
+            <div class="switcher"><span data-i18n="register_switch_pre"></span> <button id="toLogin" data-i18n="register_switch_link"></button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="wordmark footer-wordmark">IEMY</div>
+  <div data-i18n="footer_text"></div>
+</footer>
+
+<!-- product modal -->
+<div class="overlay" id="modalOverlay"><div class="modal" id="modalContent"></div></div>
+
+<!-- payment modal -->
+<div class="overlay" id="payOverlay">
+  <div class="paybox">
+    <div class="serif" style="font-size:19px;" data-i18n="pay_title"></div>
+    <div class="amt" id="payAmount">SAR 29</div>
+    <p style="font-size:13px; color:var(--muted);" data-i18n="pay_desc"></p>
+    <button class="btn btn-gold btn-block" id="payConfirmBtn" style="margin-top:16px;" data-i18n="pay_confirm"></button>
+    <button class="btn btn-ghost btn-block" id="payCancelBtn" style="margin-top:8px;" data-i18n="pay_cancel"></button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var FREE_DAYS = 1; // free ads stay live for 24 hours
+  var PREMIUM_PLANS = [
+    {id:"premium7",  days:7,  price:15},
+    {id:"premium30", days:30, price:29},
+    {id:"premium90", days:90, price:69}
+  ];
+  function getPremiumPlan(id){ return PREMIUM_PLANS.find(function(pl){return pl.id===id;}); }
+  function isPremium(p){ return !!p.plan && p.plan!=="free"; }
+  function planDays(planId){ var pl=getPremiumPlan(planId); return pl ? pl.days : FREE_DAYS; }
+  function planPrice(planId){ var pl=getPremiumPlan(planId); return pl ? pl.price : 0; }
+
+  var CATEGORIES = ["electronics","vehicles","realestate","furniture","fashion","jobs","services","animals","other"];
+  var CAT_EMOJI = {electronics:"🖥️",vehicles:"🚗",realestate:"🏠",furniture:"🛋️",fashion:"👕",jobs:"💼",services:"🛠️",animals:"🐪",other:"📦"};
+  var CAT_COLOR = {electronics:"#1C3868",vehicles:"#8A5A2E",realestate:"#2E6E5A",furniture:"#6B4A8A",fashion:"#A13D5E",jobs:"#3B5A8A",services:"#5A5A52",animals:"#7A6A2E",other:"#4C5768"};
+  var CITIES = ["riyadh","jeddah","dammam","makkah","madinah","khobar","taif","abha","other"];
+  var CONDITIONS = ["new","likenew","goodused","fairused"];
+
+  /* ================= i18n ================= */
+  var LANGS = {
+en:{dir:"ltr",name:"English"}, ar:{dir:"rtl",name:"العربية"}, ur:{dir:"rtl",name:"اردو"}, fr:{dir:"ltr",name:"Français"}
+  };
+  var T = {
+    en:{
+      nav_home:"Home", nav_sell:"Post an ad", nav_login:"Log in", nav_premium:"Premium", nav_mylistings:"My listings", nav_logout:"Log out",
+      search_placeholder:"Search phones, cars, furniture…",
+      hero_title:"Buy and sell almost anything, in your city.", hero_sub:"IEMY connects people who have things to sell with people looking for a good deal — electronics, vehicles, real estate and more.",
+      hero_cta_sell:"Post your first ad", hero_cta_browse:"Browse ads",
+      cat_all:"All", section_premium:"Premium ads", section_feed:"Latest ads",
+      sort_new:"Newest first", sort_low:"Price: low to high", sort_high:"Price: high to low",
+      filter_city_all:"All cities",
+      empty_title:"No ads match yet", empty_sub:"Try a different category or city.",
+      post_title:"Post your ad", post_sub:"Choose a plan, then fill in the details.",
+      form_title:"Title", form_category:"Category", form_condition:"Condition", form_price:"Price (SAR)", form_city:"City",
+      form_desc:"Description", form_photo:"Tap to add a photo", form_photo_hint:"Stored on this device only, for this demo.", form_publish:"Publish ad",
+      form_phone:"Contact phone number",
+      plan_free_name:"Free", plan_free_desc:"Your ad stays live for 24 hours in the normal list.",
+      plan_premium_name:"Premium", plan_premium_desc_tpl:"Top of results for {days} days with a gold border.", days_label:"days",
+      pay_title:"Confirm payment (demo)", pay_desc:"This is a simulation only — no real charge will be made.",
+      pay_confirm:"Confirm demo payment", pay_cancel:"Cancel",
+      mylistings_title:"My listings", mylistings_sub:"Track and manage what you're selling.",
+      mylistings_empty_title:"No listings yet", mylistings_empty_sub:"Post your first ad to see it here.",
+      status_active:"Active", status_expiring:"Expiring soon", status_expired:"Expired", status_sold:"Sold",
+      btn_marksold:"Mark sold", btn_markactive:"Mark active", btn_delete:"Delete", btn_renew:"Renew free", btn_upgrade:"Upgrade to premium",
+      auth_welcome_title:"Welcome to IEMY", auth_welcome_body:"Create a free account to post ads, contact sellers and track what you're selling.",
+      auth_demo_note:"This is a working demo — accounts and ads are stored only on this device.",
+      login_title:"Log in", login_username:"Username", login_password:"Password", login_submit:"Log in",
+      login_switch_pre:"New to IEMY?", login_switch_link:"Create an account", login_error:"Incorrect username or password.",
+      register_title:"Create your account", register_name:"Full name", register_username:"Username", register_phone:"Phone",
+      register_password:"Password", register_submit:"Create account", register_switch_pre:"Already have an account?", register_switch_link:"Log in",
+      register_error_fill:"Please fill in your name, username and password.", register_error_short:"Password should be at least 4 characters.",
+      register_error_taken:"That username is already taken.",
+      modal_contact:"Contact seller", modal_owner_badge:"This is your listing", modal_member_since:"Member since", contact_phone_label:"Phone",
+      toast_published:"Ad published", toast_updated:"Listing updated", toast_deleted:"Listing deleted", toast_loggedout:"Logged out",
+      toast_welcome_back:"Welcome back", toast_account_created:"Account created", toast_login_required_sell:"Log in to post an ad",
+      toast_login_required_contact:"Log in to contact the seller",
+      footer_text:"IEMY — a demo marketplace prototype. Data lives only in this browser.",
+      premium_badge:"Premium",
+      condition_new:"New", condition_likenew:"Like new", condition_goodused:"Used — good", condition_fairused:"Used — fair",
+      category_electronics:"Electronics", category_vehicles:"Vehicles", category_realestate:"Real Estate", category_furniture:"Furniture",
+      category_fashion:"Fashion", category_jobs:"Jobs", category_services:"Services", category_animals:"Animals", category_other:"Other",
+      city_riyadh:"Riyadh", city_jeddah:"Jeddah", city_dammam:"Dammam", city_makkah:"Makkah", city_madinah:"Madinah",
+      city_khobar:"Khobar", city_taif:"Taif", city_abha:"Abha", city_other:"Other"
+    },
+    ar:{
+      nav_home:"الرئيسية", nav_sell:"أضف إعلان", nav_login:"تسجيل الدخول", nav_premium:"مميز", nav_mylistings:"إعلاناتي", nav_logout:"تسجيل الخروج",
+      search_placeholder:"ابحث عن جوالات، سيارات، أثاث...",
+      hero_title:"بيع واشترِ أي شيء تقريبًا في مدينتك", hero_sub:"يربط IEMY بين من لديهم أشياء للبيع ومن يبحث عن صفقة جيدة — إلكترونيات، سيارات، عقار وأكثر.",
+      hero_cta_sell:"أضف أول إعلان لك", hero_cta_browse:"تصفح الإعلانات",
+      cat_all:"الكل", section_premium:"إعلانات مميزة", section_feed:"أحدث الإعلانات",
+      sort_new:"الأحدث", sort_low:"السعر: من الأقل", sort_high:"السعر: من الأعلى",
+      filter_city_all:"كل المدن",
+      empty_title:"لا توجد إعلانات مطابقة", empty_sub:"جرّب تصنيفًا أو مدينة أخرى.",
+      post_title:"أضف إعلانك", post_sub:"اختر الباقة ثم أدخل التفاصيل.",
+      form_title:"العنوان", form_category:"التصنيف", form_condition:"الحالة", form_price:"السعر (ريال)", form_city:"المدينة",
+      form_desc:"الوصف", form_photo:"اضغط لإضافة صورة", form_photo_hint:"تُحفظ الصورة على جهازك فقط في هذا العرض التجريبي.", form_publish:"نشر الإعلان",
+      form_phone:"رقم الجوال للتواصل",
+      plan_free_name:"مجاني", plan_free_desc:"يظهر إعلانك لمدة 24 ساعة ضمن القائمة العادية.",
+      plan_premium_name:"مميز", plan_premium_desc_tpl:"يظهر إعلانك في أعلى النتائج لمدة {days} يومًا بإطار ذهبي.", days_label:"يوم",
+      pay_title:"تأكيد الدفع (تجريبي)", pay_desc:"هذا نموذج تجريبي فقط، لن يُخصم أي مبلغ حقيقي.",
+      pay_confirm:"تأكيد الدفع التجريبي", pay_cancel:"إلغاء",
+      mylistings_title:"إعلاناتي", mylistings_sub:"تابع وأدر إعلاناتك.",
+      mylistings_empty_title:"لا توجد إعلانات بعد", mylistings_empty_sub:"أضف أول إعلان لتراه هنا.",
+      status_active:"نشط", status_expiring:"ينتهي قريبًا", status_expired:"منتهٍ", status_sold:"تم البيع",
+      btn_marksold:"تحديد كمباع", btn_markactive:"إعادة تنشيط", btn_delete:"حذف", btn_renew:"تجديد مجاني", btn_upgrade:"ترقية لمميز",
+      auth_welcome_title:"مرحبًا بك في IEMY", auth_welcome_body:"أنشئ حسابًا مجانيًا لنشر الإعلانات والتواصل مع البائعين ومتابعة ما تبيعه.",
+      auth_demo_note:"هذا عرض تجريبي — الحسابات والإعلانات محفوظة على هذا الجهاز فقط.",
+      login_title:"تسجيل الدخول", login_username:"اسم المستخدم", login_password:"كلمة المرور", login_submit:"دخول",
+      login_switch_pre:"ليس لديك حساب؟", login_switch_link:"إنشاء حساب", login_error:"اسم المستخدم أو كلمة المرور غير صحيحة.",
+      register_title:"إنشاء حساب جديد", register_name:"الاسم الكامل", register_username:"اسم المستخدم", register_phone:"رقم الجوال",
+      register_password:"كلمة المرور", register_submit:"إنشاء الحساب", register_switch_pre:"لديك حساب بالفعل؟", register_switch_link:"تسجيل الدخول",
+      register_error_fill:"يرجى تعبئة الاسم واسم المستخدم وكلمة المرور.", register_error_short:"يجب ألا تقل كلمة المرور عن 4 أحرف.",
+      register_error_taken:"اسم المستخدم هذا مستخدم بالفعل.",
+      modal_contact:"تواصل مع البائع", modal_owner_badge:"هذا إعلانك", modal_member_since:"عضو منذ", contact_phone_label:"الجوال",
+      toast_published:"تم نشر الإعلان", toast_updated:"تم تحديث الإعلان", toast_deleted:"تم حذف الإعلان", toast_loggedout:"تم تسجيل الخروج",
+      toast_welcome_back:"أهلاً بعودتك", toast_account_created:"تم إنشاء الحساب", toast_login_required_sell:"سجّل الدخول لإضافة إعلان",
+      toast_login_required_contact:"سجّل الدخول للتواصل مع البائع",
+      footer_text:"IEMY — عرض تجريبي لسوق إلكتروني. البيانات محفوظة على هذا المتصفح فقط.",
+      premium_badge:"مميز",
+      condition_new:"جديد", condition_likenew:"كالجديد", condition_goodused:"مستعمل - جيد", condition_fairused:"مستعمل - مقبول",
+      category_electronics:"إلكترونيات", category_vehicles:"سيارات", category_realestate:"عقار", category_furniture:"أثاث",
+      category_fashion:"أزياء", category_jobs:"وظائف", category_services:"خدمات", category_animals:"حيوانات", category_other:"أخرى",
+      city_riyadh:"الرياض", city_jeddah:"جدة", city_dammam:"الدمام", city_makkah:"مكة", city_madinah:"المدينة",
+      city_khobar:"الخبر", city_taif:"الطائف", city_abha:"أبها", city_other:"أخرى"
+    },
+    ur:{
+      nav_home:"ہوم", nav_sell:"اشتہار دیں", nav_login:"لاگ ان", nav_premium:"پریمیم", nav_mylistings:"میری اشتہارات", nav_logout:"لاگ آؤٹ",
+      search_placeholder:"موبائل، گاڑیاں، فرنیچر تلاش کریں...",
+      hero_title:"اپنے شہر میں تقریباً کچھ بھی خریدیں اور بیچیں", hero_sub:"IEMY فروخت کنندگان کو خریداروں سے جوڑتا ہے — الیکٹرانکس، گاڑیاں، جائیداد اور مزید۔",
+      hero_cta_sell:"اپنی پہلی اشتہار پوسٹ کریں", hero_cta_browse:"اشتہارات دیکھیں",
+      cat_all:"تمام", section_premium:"پریمیم اشتہارات", section_feed:"تازہ ترین اشتہارات",
+      sort_new:"نئے پہلے", sort_low:"قیمت: کم سے زیادہ", sort_high:"قیمت: زیادہ سے کم",
+      filter_city_all:"تمام شہر",
+      empty_title:"کوئی اشتہار نہیں ملا", empty_sub:"مختلف زمرہ یا شہر آزمائیں۔",
+      post_title:"اپنا اشتہار پوسٹ کریں", post_sub:"پہلے پلان منتخب کریں، پھر تفصیلات درج کریں۔",
+      form_title:"عنوان", form_category:"زمرہ", form_condition:"حالت", form_price:"قیمت (ریال)", form_city:"شہر",
+      form_desc:"تفصیل", form_photo:"تصویر شامل کرنے کے لیے دبائیں", form_photo_hint:"یہ ڈیمو صرف اسی ڈیوائس پر تصویر محفوظ کرتا ہے۔", form_publish:"اشتہار شائع کریں",
+      form_phone:"رابطہ فون نمبر",
+      plan_free_name:"مفت", plan_free_desc:"آپ کا اشتہار 24 گھنٹے تک عام فہرست میں نظر آئے گا۔",
+      plan_premium_name:"پریمیم", plan_premium_desc_tpl:"آپ کا اشتہار {days} دن تک سنہری بارڈر کے ساتھ سب سے اوپر نظر آئے گا۔", days_label:"دن",
+      pay_title:"ادائیگی کی تصدیق (ڈیمو)", pay_desc:"یہ صرف ڈیمو ہے، کوئی اصل رقم نہیں کاٹی جائے گی۔",
+      pay_confirm:"ڈیمو ادائیگی کی تصدیق کریں", pay_cancel:"منسوخ کریں",
+      mylistings_title:"میری اشتہارات", mylistings_sub:"اپنے اشتہارات کا نظم کریں۔",
+      mylistings_empty_title:"ابھی تک کوئی اشتہار نہیں", mylistings_empty_sub:"اپنا پہلا اشتہار پوسٹ کریں۔",
+      status_active:"فعال", status_expiring:"جلد ختم ہو رہا ہے", status_expired:"ختم شدہ", status_sold:"فروخت ہو گیا",
+      btn_marksold:"فروخت شدہ نشان زد کریں", btn_markactive:"دوبارہ فعال کریں", btn_delete:"حذف کریں", btn_renew:"مفت تجدید", btn_upgrade:"پریمیم میں اپ گریڈ کریں",
+      auth_welcome_title:"IEMY میں خوش آمدید", auth_welcome_body:"اشتہارات پوسٹ کرنے اور فروخت کنندگان سے رابطہ کرنے کے لیے مفت اکاؤنٹ بنائیں۔",
+      auth_demo_note:"یہ ایک ڈیمو ہے — اکاؤنٹس اور اشتہارات صرف اسی ڈیوائس پر محفوظ ہیں۔",
+      login_title:"لاگ ان کریں", login_username:"صارف نام", login_password:"پاس ورڈ", login_submit:"لاگ ان",
+      login_switch_pre:"اکاؤنٹ نہیں ہے؟", login_switch_link:"اکاؤنٹ بنائیں", login_error:"صارف نام یا پاس ورڈ غلط ہے۔",
+      register_title:"نیا اکاؤنٹ بنائیں", register_name:"پورا نام", register_username:"صارف نام", register_phone:"فون نمبر",
+      register_password:"پاس ورڈ", register_submit:"اکاؤنٹ بنائیں", register_switch_pre:"پہلے سے اکاؤنٹ ہے؟", register_switch_link:"لاگ ان کریں",
+      register_error_fill:"براہ کرم نام، صارف نام اور پاس ورڈ درج کریں۔", register_error_short:"پاس ورڈ کم از کم 4 حروف کا ہونا چاہیے۔",
+      register_error_taken:"یہ صارف نام پہلے سے موجود ہے۔",
+      modal_contact:"فروخت کنندہ سے رابطہ کریں", modal_owner_badge:"یہ آپ کا اشتہار ہے", modal_member_since:"ممبر بننے کی تاریخ", contact_phone_label:"فون",
+      toast_published:"اشتہار شائع ہو گیا", toast_updated:"اشتہار اپ ڈیٹ ہو گیا", toast_deleted:"اشتہار حذف ہو گیا", toast_loggedout:"لاگ آؤٹ ہو گیا",
+      toast_welcome_back:"خوش آمدید", toast_account_created:"اکاؤنٹ بن گیا", toast_login_required_sell:"اشتہار پوسٹ کرنے کے لیے لاگ ان کریں",
+      toast_login_required_contact:"فروخت کنندہ سے رابطے کے لیے لاگ ان کریں",
+      footer_text:"IEMY — ایک ڈیمو مارکیٹ پلیس۔ ڈیٹا صرف اس براؤزر میں محفوظ ہے۔",
+      premium_badge:"پریمیم",
+      condition_new:"نیا", condition_likenew:"نئے جیسا", condition_goodused:"استعمال شدہ - اچھا", condition_fairused:"استعمال شدہ - مناسب",
+      category_electronics:"الیکٹرانکس", category_vehicles:"گاڑیاں", category_realestate:"جائیداد", category_furniture:"فرنیچر",
+      category_fashion:"فیشن", category_jobs:"ملازمتیں", category_services:"خدمات", category_animals:"جانور", category_other:"دیگر",
+      city_riyadh:"ریاض", city_jeddah:"جدہ", city_dammam:"دمام", city_makkah:"مکہ", city_madinah:"مدینہ",
+      city_khobar:"خبر", city_taif:"طائف", city_abha:"ابہا", city_other:"دیگر"
+    },
+    fr:{
+      nav_home:"Accueil", nav_sell:"Publier une annonce", nav_login:"Connexion", nav_premium:"Premium", nav_mylistings:"Mes annonces", nav_logout:"Déconnexion",
+      search_placeholder:"Rechercher téléphones, voitures, meubles…",
+      hero_title:"Achetez et vendez presque tout, dans votre ville.", hero_sub:"IEMY met en relation les vendeurs et les acheteurs — électronique, véhicules, immobilier et plus.",
+      hero_cta_sell:"Publier votre première annonce", hero_cta_browse:"Voir les annonces",
+      cat_all:"Toutes", section_premium:"Annonces premium", section_feed:"Dernières annonces",
+      sort_new:"Plus récentes", sort_low:"Prix croissant", sort_high:"Prix décroissant",
+      filter_city_all:"Toutes les villes",
+      empty_title:"Aucune annonce ne correspond", empty_sub:"Essayez une autre catégorie ou ville.",
+      post_title:"Publier votre annonce", post_sub:"Choisissez une formule puis ajoutez les détails.",
+      form_title:"Titre", form_category:"Catégorie", form_condition:"État", form_price:"Prix (SAR)", form_city:"Ville",
+      form_desc:"Description", form_photo:"Ajouter une photo", form_photo_hint:"La photo est enregistrée uniquement sur cet appareil pour cette démo.", form_publish:"Publier l'annonce",
+      form_phone:"Numéro de téléphone de contact",
+      plan_free_name:"Gratuit", plan_free_desc:"Votre annonce reste visible 24 heures dans la liste normale.",
+      plan_premium_name:"Premium", plan_premium_desc_tpl:"En tête des résultats pendant {days} jours avec un cadre doré.", days_label:"jours",
+      pay_title:"Confirmer le paiement (démo)", pay_desc:"Ceci est une simulation, aucun montant réel ne sera prélevé.",
+      pay_confirm:"Confirmer le paiement de démonstration", pay_cancel:"Annuler",
+      mylistings_title:"Mes annonces", mylistings_sub:"Suivez et gérez vos annonces.",
+      mylistings_empty_title:"Aucune annonce pour l'instant", mylistings_empty_sub:"Publiez votre première annonce pour la voir ici.",
+      status_active:"Active", status_expiring:"Expire bientôt", status_expired:"Expirée", status_sold:"Vendu",
+      btn_marksold:"Marquer comme vendu", btn_markactive:"Réactiver", btn_delete:"Supprimer", btn_renew:"Renouveler gratuitement", btn_upgrade:"Passer en premium",
+      auth_welcome_title:"Bienvenue sur IEMY", auth_welcome_body:"Créez un compte gratuit pour publier des annonces, contacter des vendeurs et suivre ce que vous vendez.",
+      auth_demo_note:"Ceci est une démo — comptes et annonces sont stockés uniquement sur cet appareil.",
+      login_title:"Connexion", login_username:"Nom d'utilisateur", login_password:"Mot de passe", login_submit:"Se connecter",
+      login_switch_pre:"Pas encore de compte ?", login_switch_link:"Créez-en un", login_error:"Nom d'utilisateur ou mot de passe incorrect.",
+      register_title:"Créer votre compte", register_name:"Nom complet", register_username:"Nom d'utilisateur", register_phone:"Téléphone",
+      register_password:"Mot de passe", register_submit:"Créer le compte", register_switch_pre:"Déjà un compte ?", register_switch_link:"Connexion",
+      register_error_fill:"Veuillez renseigner le nom, le nom d'utilisateur et le mot de passe.", register_error_short:"Le mot de passe doit contenir au moins 4 caractères.",
+      register_error_taken:"Ce nom d'utilisateur est déjà pris.",
+      modal_contact:"Contacter le vendeur", modal_owner_badge:"C'est votre annonce", modal_member_since:"Membre depuis", contact_phone_label:"Téléphone",
+      toast_published:"Annonce publiée", toast_updated:"Annonce mise à jour", toast_deleted:"Annonce supprimée", toast_loggedout:"Déconnecté",
+      toast_welcome_back:"Bon retour", toast_account_created:"Compte créé", toast_login_required_sell:"Connectez-vous pour publier une annonce",
+      toast_login_required_contact:"Connectez-vous pour contacter le vendeur",
+      footer_text:"IEMY — démo de place de marché. Les données restent sur ce navigateur.",
+      premium_badge:"Premium",
+      condition_new:"Neuf", condition_likenew:"Comme neuf", condition_goodused:"Occasion - bon état", condition_fairused:"Occasion - état correct",
+      category_electronics:"Électronique", category_vehicles:"Véhicules", category_realestate:"Immobilier", category_furniture:"Meubles",
+      category_fashion:"Mode", category_jobs:"Emplois", category_services:"Services", category_animals:"Animaux", category_other:"Autre",
+      city_riyadh:"Riyad", city_jeddah:"Djeddah", city_dammam:"Dammam", city_makkah:"La Mecque", city_madinah:"Médine",
+      city_khobar:"Khobar", city_taif:"Taëf", city_abha:"Abha", city_other:"Autre"
+    }
+  };
+
+  var currentLang = "en";
+  function tr(key){ return (T[currentLang] && T[currentLang][key]) || T.en[key] || key; }
+
+  function applyLang(){
+    document.documentElement.lang = currentLang;
+    document.documentElement.dir = LANGS[currentLang].dir;
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      el.textContent = tr(el.getAttribute("data-i18n"));
+    });
+    document.querySelectorAll("[data-i18n-ph]").forEach(function(el){
+      el.setAttribute("placeholder", tr(el.getAttribute("data-i18n-ph")));
+    });
+    document.getElementById("langSel").value = currentLang;
+    renderPlanCards();
+    populateCategorySelect(); populateCitySelect(); populateConditionSelect();
+    renderCategoryBar(); renderCityBar();
+    renderGrid(); renderPremiumStrip();
+    if(document.getElementById("view-mine").classList.contains("active")) renderMyListings();
+    if(document.getElementById("view-sell").classList.contains("active")) renderSellPreview();
+    renderAuthArea();
+  }
+
+  /* ================= storage ================= */
+  var LS_USERS="iemy_users", LS_SESSION="iemy_session", LS_PRODUCTS="iemy_products", LS_SEED="iemy_seeded_v2", LS_LANG="iemy_lang";
+  function safeGet(key, fb){ try{ var raw = localStorage.getItem(key); return raw===null? fb : JSON.parse(raw); }catch(e){ return fb; } }
+  function safeSet(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); return true; }catch(e){ console.error(e); return false; } }
+  function getUsers(){ return safeGet(LS_USERS, []); }
+  function setUsers(u){ return safeSet(LS_USERS, u); }
+  function getProducts(){ return safeGet(LS_PRODUCTS, []); }
+  function setProducts(p){ return safeSet(LS_PRODUCTS, p); }
+  function getSession(){ try{ return localStorage.getItem(LS_SESSION); }catch(e){ return null; } }
+  function setSession(u){ try{ if(u===null) localStorage.removeItem(LS_SESSION); else localStorage.setItem(LS_SESSION,u);}catch(e){} }
+
+  function seedIfNeeded(){
+    if(safeGet(LS_SEED,false)) return;
+    var now = Date.now(), day=86400000;
+    setUsers([
+      {username:"sara_k", password:"demo1234", name:"Sara Al-Khalidi", phone:"0551112222", joinedAt: now-90*day},
+      {username:"omar_j", password:"demo1234", name:"Omar Al-Jubran", phone:"0553334444", joinedAt: now-60*day}
+    ]);
+    setProducts([
+      {id:"p1", title:"Sony WH-1000XM4 Headphones", category:"electronics", city:"riyadh", price:520, condition:"likenew", description:"Barely used, comes with case and cable.", seller:"sara_k", phone:"0551112222", createdAt: now-2*day, plan:"free", expiresAt: now-2*day+FREE_DAYS*day, status:"active", image:null},
+      {id:"p2", title:"Toyota Land Cruiser 2022", category:"vehicles", city:"jeddah", price:185000, condition:"goodused", description:"Full option, single owner, service history available.", seller:"omar_j", phone:"0553334444", createdAt: now-1*day, plan:"premium30", expiresAt: now-1*day+30*day, status:"active", image:null},
+      {id:"p3", title:"IKEA study desk + chair", category:"furniture", city:"riyadh", price:280, condition:"goodused", description:"Moving out sale, pickup only.", seller:"sara_k", phone:"0551112222", createdAt: now-5*day, plan:"free", expiresAt: now-5*day+FREE_DAYS*day, status:"expired", image:null},
+      {id:"p4", title:"Dell XPS 13, i7, 16GB RAM", category:"electronics", city:"dammam", price:2600, condition:"goodused", description:"Great condition, new battery 3 months ago.", seller:"omar_j", phone:"0553334444", createdAt: now-3*3600000, plan:"premium90", expiresAt: now-3*3600000+90*day, status:"active", image:null},
+      {id:"p5", title:"3-bedroom apartment for rent", category:"realestate", city:"khobar", price:38000, condition:"goodused", description:"Annual rent, near the corniche, 180 sqm.", seller:"sara_k", phone:"0551112222", createdAt: now-8*3600000, plan:"free", expiresAt: now-8*3600000+FREE_DAYS*day, status:"active", image:null},
+      {id:"p6", title:"North Face jacket, size L", category:"fashion", city:"makkah", price:150, condition:"likenew", description:"Worn twice, navy blue, waterproof shell.", seller:"omar_j", phone:"0553334444", createdAt: now-12*3600000, plan:"free", expiresAt: now-12*3600000+FREE_DAYS*day, status:"sold", image:null}
+    ]);
+    safeSet(LS_SEED, true);
+  }
+  seedIfNeeded();
+
+  function sweepExpiry(){
+    var products = getProducts(); var changed=false; var now=Date.now();
+    products.forEach(function(p){
+      if(p.status==="active" && p.expiresAt && now > p.expiresAt){ p.status="expired"; changed=true; }
+    });
+    if(changed) setProducts(products);
+  }
+  sweepExpiry();
+  setInterval(sweepExpiry, 60000);
+
+  /* ================= state ================= */
+  var state = { filterCategory:"all", filterCity:"all", query:"", sort:"new", imageDataUrl:null, selectedPlan:"free", pendingSubmit:null };
+
+  function currentUser(){
+    var sess = getSession(); if(!sess) return null;
+    return getUsers().find(function(x){return x.username===sess;}) || null;
+  }
+
+  /* ================= toast ================= */
+  var toastTimer=null;
+  function toast(msg){
+    var el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show");
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){el.classList.remove("show");},2400);
+  }
+
+  /* ================= view routing ================= */
+  function showView(name){
+    document.querySelectorAll(".view").forEach(function(v){v.classList.remove("active");});
+    var el=document.getElementById("view-"+name); if(el) el.classList.add("active");
+    window.scrollTo({top:0, behavior:"auto"});
+    if(name==="sell"){
+      var u=currentUser(); var phoneEl=document.getElementById("s-phone");
+      if(u && phoneEl && !phoneEl.value) phoneEl.value = u.phone && u.phone!=="—" ? u.phone : "";
+      renderSellPreview();
+    }
+    if(name==="mine") renderMyListings();
+  }
+  function requireAuthThen(action){
+    if(!currentUser()){ openAuth("login"); toast(tr("toast_login_required_sell")); return; }
+    action();
+  }
+
+  /* ================= header/auth ================= */
+  function initials(name){ if(!name) return "?"; var p=name.trim().split(/\s+/); return (p[0][0]+(p[1]?p[1][0]:"")).toUpperCase(); }
+
+  function renderAuthArea(){
+    var el=document.getElementById("authArea"); var u=currentUser();
+    if(!u){
+      el.innerHTML="";
+      var btn=document.createElement("button"); btn.className="btn btn-ghost-dark"; btn.textContent=tr("nav_login");
+      btn.onclick=function(){openAuth("login");}; el.appendChild(btn); return;
+    }
+    el.innerHTML="";
+    var wrap=document.createElement("div"); wrap.style.position="relative";
+    var chip=document.createElement("button"); chip.className="user-chip";
+    chip.innerHTML='<span class="avatar">'+initials(u.name)+'</span><span>'+escapeHtml(u.name.split(" ")[0])+'</span>';
+    var menu=document.createElement("div");
+    menu.style.cssText="display:none; position:absolute; inset-inline-end:0; top:44px; background:var(--card); border:1px solid var(--border); border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.15); min-width:170px; overflow:hidden; z-index:50;";
+    var is="display:block; width:100%; text-align:start; padding:10px 14px; background:none; border:none; font-size:13.5px; cursor:pointer; color:var(--ink);";
+    menu.innerHTML='<button id="menuMine" style="'+is+'">'+tr("nav_mylistings")+'</button><button id="menuLogout" style="'+is+'border-top:1px solid var(--border); color:var(--alert);">'+tr("nav_logout")+'</button>';
+    chip.onclick=function(e){e.stopPropagation(); menu.style.display=menu.style.display==="block"?"none":"block";};
+    document.addEventListener("click", function(){menu.style.display="none";});
+    wrap.appendChild(chip); wrap.appendChild(menu); el.appendChild(wrap);
+    menu.querySelector("#menuMine").onclick=function(){showView("mine"); menu.style.display="none";};
+    menu.querySelector("#menuLogout").onclick=function(){setSession(null); toast(tr("toast_loggedout")); renderAuthArea(); showView("home");};
+  }
+
+  /* ================= category / city bars ================= */
+  function renderCategoryBar(){
+    var bar=document.getElementById("categoryBar"); bar.innerHTML="";
+    [{id:"all"}].concat(CATEGORIES.map(function(c){return {id:c};})).forEach(function(c){
+      var chip=document.createElement("button"); chip.className="catchip"+(state.filterCategory===c.id?" active":"");
+      var label = c.id==="all" ? tr("cat_all") : (CAT_EMOJI[c.id]+" "+tr("category_"+c.id));
+      chip.textContent=label;
+      chip.onclick=function(){ state.filterCategory=c.id; renderCategoryBar(); renderGrid(); showView("home"); };
+      bar.appendChild(chip);
+    });
+  }
+  function renderCityBar(){
+    var bar=document.getElementById("cityBar"); bar.innerHTML="";
+    var allChip=document.createElement("button"); allChip.className="citychip"+(state.filterCity==="all"?" active":"");
+    allChip.textContent=tr("filter_city_all");
+    allChip.onclick=function(){state.filterCity="all"; renderCityBar(); renderGrid(); showView("home");};
+    bar.appendChild(allChip);
+    CITIES.forEach(function(c){
+      var chip=document.createElement("button"); chip.className="citychip"+(state.filterCity===c?" active":"");
+      chip.textContent=tr("city_"+c);
+      chip.onclick=function(){state.filterCity=c; renderCityBar(); renderGrid(); showView("home");};
+      bar.appendChild(chip);
+    });
+  }
+
+  /* ================= helpers ================= */
+  function timeAgo(ts){
+    var s=Math.floor((Date.now()-ts)/1000);
+    if(s<3600) return Math.max(1,Math.floor(s/60))+"m";
+    if(s<86400) return Math.floor(s/3600)+"h";
+    return Math.floor(s/86400)+"d";
+  }
+  function money(n){ return "SAR "+Number(n).toLocaleString(); }
+  function escapeHtml(s){ var d=document.createElement("div"); d.textContent=s==null?"":s; return d.innerHTML; }
+
+  function daysLeft(p){ return Math.ceil((p.expiresAt-Date.now())/86400000); }
+  function computeStatus(p){
+    if(p.status==="sold") return "sold";
+    if(p.status==="expired") return "expired";
+    var dl=daysLeft(p);
+    if(dl<=1) return "expiring";
+    return "active";
+  }
+
+  /* ================= grid / feed ================= */
+  function visibleProducts(){
+    return getProducts().filter(function(p){ return p.status==="active"; });
+  }
+
+  function matchesFilter(p){
+    if(state.filterCategory!=="all" && p.category!==state.filterCategory) return false;
+    if(state.filterCity!=="all" && p.city!==state.filterCity) return false;
+    var q=state.query.trim().toLowerCase();
+    if(q && p.title.toLowerCase().indexOf(q)===-1 && p.description.toLowerCase().indexOf(q)===-1) return false;
+    return true;
+  }
+
+  function renderPremiumStrip(){
+    var outer=document.getElementById("premiumOuter"); var strip=document.getElementById("premiumStrip");
+    var items=visibleProducts().filter(function(p){return isPremium(p) && matchesFilter(p);});
+    items.sort(function(a,b){return b.createdAt-a.createdAt;});
+    if(!items.length){ outer.style.display="none"; strip.innerHTML=""; return; }
+    outer.style.display="block"; strip.innerHTML="";
+    items.forEach(function(p){
+      var card=document.createElement("div"); card.className="pcard";
+      var thumbStyle = p.image ? "" : "background:"+CAT_COLOR[p.category]+";";
+      card.innerHTML =
+        '<div class="thumb" style="'+thumbStyle+'">'+(p.image?'<img src="'+p.image+'" alt="">':CAT_EMOJI[p.category])+'<span class="badge">'+tr("premium_badge")+'</span></div>'+
+        '<div class="body"><div class="price">'+money(p.price)+'</div><div class="title">'+escapeHtml(p.title)+'</div></div>';
+      card.onclick=function(){openProductModal(p.id);};
+      strip.appendChild(card);
+    });
+  }
+
+  function renderRow(p){
+    var row=document.createElement("div"); row.className="row";
+    var thumbStyle = p.image ? "" : "background:"+CAT_COLOR[p.category]+";";
+    row.innerHTML =
+      '<div class="thumb" style="'+thumbStyle+'">'+(p.image?'<img src="'+p.image+'" alt="">':CAT_EMOJI[p.category])+'</div>'+
+      '<div class="info">'+
+        '<div class="title">'+escapeHtml(p.title)+(isPremium(p)?' ★':'')+'</div>'+
+        '<div class="meta"><span>'+tr("city_"+p.city)+'</span><span class="dot">·</span><span>'+tr("condition_"+p.condition)+'</span><span class="dot">·</span><span>'+timeAgo(p.createdAt)+'</span></div>'+
+      '</div>'+
+      '<div class="price-wrap">'+(p.status==="sold"?'<span class="sold-pill">'+tr("status_sold")+'</span>':'<div class="price">'+money(p.price)+'</div>')+'</div>';
+    row.onclick=function(){openProductModal(p.id);};
+    return row;
+  }
+
+  function renderGrid(){
+    var feed=document.getElementById("productFeed");
+    var all=getProducts().filter(function(p){ return (p.status==="active" || p.status==="sold") && matchesFilter(p); });
+    all.sort(function(a,b){
+      if(a.status!==b.status) return a.status==="sold" ? 1 : -1;
+      if(state.sort==="low") return a.price-b.price;
+      if(state.sort==="high") return b.price-a.price;
+      return b.createdAt-a.createdAt;
+    });
+    feed.innerHTML="";
+    all.forEach(function(p){ feed.appendChild(renderRow(p)); });
+    document.getElementById("emptyState").style.display = all.length ? "none" : "block";
+    document.getElementById("resultCount").textContent = all.length;
+    renderPremiumStrip();
+  }
+
+  /* ================= product modal ================= */
+  function openProductModal(id){
+    var p=getProducts().find(function(x){return x.id===id;}); if(!p) return;
+    var seller=getUsers().find(function(u){return u.username===p.seller;});
+    var isOwner = currentUser() && currentUser().username===p.seller;
+    var content=document.getElementById("modalContent");
+    var thumbStyle = p.image ? "" : "background:"+CAT_COLOR[p.category];
+    content.innerHTML =
+      '<div class="mimg" style="'+thumbStyle+'">'+(p.image?'<img src="'+p.image+'" alt="">':CAT_EMOJI[p.category])+'</div>'+
+      '<div class="mbody">'+
+        '<button class="close" id="modalClose" aria-label="Close">✕</button>'+
+        '<div class="mprice">'+money(p.price)+'</div>'+
+        '<div class="mtitle serif">'+escapeHtml(p.title)+'</div>'+
+        '<div class="mmeta">'+tr("category_"+p.category)+' · '+tr("city_"+p.city)+' · '+tr("condition_"+p.condition)+' · '+timeAgo(p.createdAt)+
+          (p.status==="sold" ? ' · <strong style="color:var(--alert)">'+tr("status_sold")+'</strong>' : '')+'</div>'+
+        '<div class="mdesc">'+escapeHtml(p.description)+'</div>'+
+        '<div class="seller-box"><span class="avatar">'+initials(seller?seller.name:"?")+'</span>'+
+          '<div><div style="font-weight:700; font-size:13.5px;">'+(seller?escapeHtml(seller.name):"—")+'</div>'+
+          '<div style="font-size:12px; color:var(--muted);">'+tr("modal_member_since")+' '+(seller?new Date(seller.joinedAt).toLocaleDateString(currentLang):"—")+'</div></div></div>'+
+        '<div class="contact-reveal" id="contactReveal">'+tr("contact_phone_label")+': '+(p.phone || (seller?seller.phone:"—"))+'</div>'+
+        '<div class="actions">'+
+          (isOwner ? '<span class="status-pill status-active">'+tr("modal_owner_badge")+'</span>' : '<button class="btn btn-gold" id="contactBtn">'+tr("modal_contact")+'</button>')+
+        '</div>'+
+      '</div>';
+    document.getElementById("modalOverlay").classList.add("active");
+    document.getElementById("modalClose").onclick=closeModal;
+    var cbtn=document.getElementById("contactBtn");
+    if(cbtn) cbtn.onclick=function(){
+      if(!currentUser()){ closeModal(); openAuth("login"); toast(tr("toast_login_required_contact")); return; }
+      document.getElementById("contactReveal").style.display="block";
+    };
+  }
+  function closeModal(){ document.getElementById("modalOverlay").classList.remove("active"); }
+  document.getElementById("modalOverlay").addEventListener("click", function(e){ if(e.target.id==="modalOverlay") closeModal(); });
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape"){ closeModal(); closePay(); } });
+
+  /* ================= selects ================= */
+  function populateCategorySelect(){
+    var sel=document.getElementById("s-category"); var prev=sel.value; sel.innerHTML="";
+    CATEGORIES.forEach(function(c){ var o=document.createElement("option"); o.value=c; o.textContent=CAT_EMOJI[c]+" "+tr("category_"+c); sel.appendChild(o); });
+    if(prev) sel.value=prev;
+  }
+  function populateCitySelect(){
+    var sel=document.getElementById("s-city"); var prev=sel.value; sel.innerHTML="";
+    CITIES.forEach(function(c){ var o=document.createElement("option"); o.value=c; o.textContent=tr("city_"+c); sel.appendChild(o); });
+    if(prev) sel.value=prev;
+  }
+  function populateConditionSelect(){
+    var sel=document.getElementById("s-condition"); var prev=sel.value; sel.innerHTML="";
+    CONDITIONS.forEach(function(c){ var o=document.createElement("option"); o.value=c; o.textContent=tr("condition_"+c); sel.appendChild(o); });
+    if(prev) sel.value=prev;
+  }
+
+  /* ================= plan selection ================= */
+  function selectPlan(id){ state.selectedPlan=id; renderPlanCards(); renderSellPreview(); }
+  function renderPlanCards(){
+    var grid=document.getElementById("planGrid"); if(!grid) return;
+    grid.innerHTML="";
+
+    var freeCard=document.createElement("div");
+    freeCard.className="plancard"+(state.selectedPlan==="free"?" selected":"");
+    freeCard.innerHTML =
+      '<span class="pcheck"></span>'+
+      '<div class="pname">'+tr("plan_free_name")+'</div>'+
+      '<div class="pprice">SAR 0</div>'+
+      '<div class="pdesc">'+tr("plan_free_desc")+'</div>';
+    freeCard.onclick=function(){ selectPlan("free"); };
+    grid.appendChild(freeCard);
+
+    PREMIUM_PLANS.forEach(function(pl){
+      var card=document.createElement("div");
+      card.className="plancard premium"+(state.selectedPlan===pl.id?" selected":"");
+      var desc=tr("plan_premium_desc_tpl").replace("{days}", pl.days);
+      card.innerHTML =
+        '<span class="pcheck"></span>'+
+        '<div class="pname">'+tr("plan_premium_name")+'</div>'+
+        '<div class="pprice">SAR '+pl.price+'</div>'+
+        '<span class="ptag">'+pl.days+' '+tr("days_label")+'</span>'+
+        '<div class="pdesc">'+desc+'</div>';
+      card.onclick=function(){ selectPlan(pl.id); };
+      grid.appendChild(card);
+    });
+  }
+  renderPlanCards();
+
+  /* ================= image upload ================= */
+  function resizeImage(file, maxDim, cb){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var w=img.width, h=img.height; var scale=Math.min(1, maxDim/Math.max(w,h));
+        var canvas=document.createElement("canvas"); canvas.width=Math.round(w*scale); canvas.height=Math.round(h*scale);
+        canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+        cb(canvas.toDataURL("image/jpeg",0.82));
+      };
+      img.onerror=function(){cb(null);};
+      img.src=e.target.result;
+    };
+    reader.onerror=function(){cb(null);};
+    reader.readAsDataURL(file);
+  }
+  document.getElementById("s-image").addEventListener("change", function(e){
+    var file=e.target.files[0]; if(!file) return;
+    resizeImage(file, 640, function(dataUrl){
+      state.imageDataUrl=dataUrl;
+      document.getElementById("imgPickerText").innerHTML = dataUrl ? '<img src="'+dataUrl+'" alt="">' : tr("form_photo");
+      renderSellPreview();
+    });
+  });
+
+  function renderSellPreview(){
+    var title=document.getElementById("s-title").value || tr("form_title");
+    var price=document.getElementById("s-price").value || "0";
+    var condition=document.getElementById("s-condition").value || CONDITIONS[0];
+    var catId=document.getElementById("s-category").value || CATEGORIES[0];
+    var cityId=document.getElementById("s-city").value || CITIES[0];
+    var fake={title:title, price:price, category:catId, city:cityId, condition:condition, createdAt:Date.now(), status:"active", image:state.imageDataUrl, plan:state.selectedPlan};
+    var holder=document.getElementById("previewCard"); holder.innerHTML="";
+    var r=renderRow(fake); r.style.cursor="default"; r.onclick=null; holder.appendChild(r);
+  }
+  ["s-title","s-phone","s-price","s-condition","s-category","s-city"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", renderSellPreview);
+    document.getElementById(id).addEventListener("change", renderSellPreview);
+  });
+
+  /* ================= payment simulation ================= */
+  function openPay(amount, onConfirm){
+    document.getElementById("payAmount").textContent = "SAR "+amount;
+    document.getElementById("payOverlay").classList.add("active");
+    document.getElementById("payConfirmBtn").onclick=function(){ closePay(); onConfirm(); };
+    document.getElementById("payCancelBtn").onclick=closePay;
+  }
+  function closePay(){ document.getElementById("payOverlay").classList.remove("active"); }
+
+  /* ================= sell form submit ================= */
+  document.getElementById("sellForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var u=currentUser();
+    if(!u){ openAuth("login"); toast(tr("toast_login_required_sell")); return; }
+    var title=document.getElementById("s-title").value.trim();
+    var phone=document.getElementById("s-phone").value.trim();
+    var price=parseFloat(document.getElementById("s-price").value);
+    var desc=document.getElementById("s-desc").value.trim();
+    var errEl=document.getElementById("sellErr");
+    if(!title || !phone || !desc || isNaN(price) || price<0){
+      errEl.textContent = tr("register_error_fill"); errEl.style.display="block"; return;
+    }
+    errEl.style.display="none";
+
+    function createListing(){
+      var now=Date.now();
+      var plan=state.selectedPlan;
+      var expiresAt = now + planDays(plan)*86400000;
+      var product={
+        id:"p"+now, title:title, category:document.getElementById("s-category").value, city:document.getElementById("s-city").value,
+        price:price, condition:document.getElementById("s-condition").value, description:desc, seller:u.username, phone:phone,
+        createdAt:now, plan:plan, expiresAt:expiresAt, status:"active", image:state.imageDataUrl
+      };
+      var products=getProducts(); products.push(product);
+      var ok=setProducts(products);
+      if(!ok){ errEl.textContent="Couldn't save — try a smaller photo."; errEl.style.display="block"; return; }
+      toast(tr("toast_published"));
+      document.getElementById("sellForm").reset();
+      state.imageDataUrl=null; state.selectedPlan="free"; renderPlanCards();
+      document.getElementById("imgPickerText").textContent=tr("form_photo");
+      populateCategorySelect(); populateCitySelect(); populateConditionSelect();
+      renderGrid(); showView("home");
+    }
+
+    if(state.selectedPlan!=="free"){
+      openPay(planPrice(state.selectedPlan), createListing);
+    } else {
+      createListing();
+    }
+  });
+
+  /* ================= my listings ================= */
+  function renderMyListings(){
+    var u=currentUser(); var wrap=document.getElementById("myListWrap");
+    if(!u){ wrap.innerHTML='<div class="empty"><div class="serif">'+tr("login_title")+'</div></div>'; return; }
+    var mine=getProducts().filter(function(p){return p.seller===u.username;});
+    mine.sort(function(a,b){return b.createdAt-a.createdAt;});
+    if(!mine.length){
+      wrap.innerHTML='<div class="empty"><div class="serif">'+tr("mylistings_empty_title")+'</div><div>'+tr("mylistings_empty_sub")+'</div></div>';
+      return;
+    }
+    wrap.innerHTML="";
+    mine.forEach(function(p){
+      var st=computeStatus(p);
+      var row=document.createElement("div"); row.className="mylist-item";
+      var thumbStyle = p.image ? "" : "background:"+CAT_COLOR[p.category]+";";
+      var statusHtml = '<span class="status-pill status-'+st+'">'+tr("status_"+st)+'</span>';
+      row.innerHTML =
+        '<div class="thumb-sm" style="'+thumbStyle+'">'+(p.image?'<img src="'+p.image+'" alt="">':CAT_EMOJI[p.category])+'</div>'+
+        '<div class="mi-body"><div class="mi-title">'+escapeHtml(p.title)+statusHtml+'</div>'+
+        '<div class="mi-meta">'+money(p.price)+' · '+tr("city_"+p.city)+' · '+timeAgo(p.createdAt)+(isPremium(p)?' · ★ '+tr("premium_badge"):'')+'</div></div>'+
+        '<div class="mi-actions">'+
+          (st!=="sold" ? '<button class="btn btn-ghost btn-sm toggleSold" style="padding:7px 12px; font-size:12.5px;">'+tr("btn_marksold")+'</button>' :
+                          '<button class="btn btn-ghost btn-sm toggleSold" style="padding:7px 12px; font-size:12.5px;">'+tr("btn_markactive")+'</button>')+
+          (st==="expired" ? '<button class="btn btn-ghost btn-sm renewBtn" style="padding:7px 12px; font-size:12.5px;">'+tr("btn_renew")+'</button>' : '')+
+          (!isPremium(p) ? '<button class="btn btn-gold btn-sm upgradeBtn" style="padding:7px 12px; font-size:12.5px;">'+tr("btn_upgrade")+'</button>' : '')+
+          '<button class="btn btn-danger delBtn" style="padding:7px 12px; font-size:12.5px;">'+tr("btn_delete")+'</button>'+
+        '</div>';
+      row.querySelector(".toggleSold").onclick=function(){
+        var all=getProducts(); var idx=all.findIndex(function(x){return x.id===p.id;});
+        if(idx>-1){ all[idx].status = all[idx].status==="sold" ? "active" : "sold"; setProducts(all); renderMyListings(); renderGrid(); toast(tr("toast_updated")); }
+      };
+      var renewBtn=row.querySelector(".renewBtn");
+      if(renewBtn) renewBtn.onclick=function(){
+        var all=getProducts(); var idx=all.findIndex(function(x){return x.id===p.id;});
+        if(idx>-1){ all[idx].status="active"; all[idx].expiresAt=Date.now()+FREE_DAYS*86400000; all[idx].plan="free"; setProducts(all); renderMyListings(); renderGrid(); toast(tr("toast_updated")); }
+      };
+      var upBtn=row.querySelector(".upgradeBtn");
+      if(upBtn) upBtn.onclick=function(){
+        var tier=PREMIUM_PLANS[1]; // default upgrade offer: the 30-day premium tier
+        openPay(tier.price, function(){
+          var all=getProducts(); var idx=all.findIndex(function(x){return x.id===p.id;});
+          if(idx>-1){ all[idx].plan=tier.id; all[idx].status="active"; all[idx].expiresAt=Date.now()+tier.days*86400000; setProducts(all); renderMyListings(); renderGrid(); toast(tr("toast_updated")); }
+        });
+      };
+      row.querySelector(".delBtn").onclick=function(){
+        if(!confirm("Delete this listing? This can't be undone.")) return;
+        setProducts(getProducts().filter(function(x){return x.id!==p.id;}));
+        renderMyListings(); renderGrid(); toast(tr("toast_deleted"));
+      };
+      wrap.appendChild(row);
+    });
+  }
+
+  /* ================= auth ================= */
+  function openAuth(mode){ showView("auth"); toggleAuthMode(mode||"login"); }
+  function toggleAuthMode(mode){
+    document.getElementById("loginForm").style.display = mode==="login"?"block":"none";
+    document.getElementById("registerForm").style.display = mode==="register"?"block":"none";
+    document.getElementById("loginErr").style.display="none";
+    document.getElementById("regErr").style.display="none";
+  }
+  document.getElementById("toRegister").onclick=function(){toggleAuthMode("register");};
+  document.getElementById("toLogin").onclick=function(){toggleAuthMode("login");};
+
+  document.getElementById("loginSubmit").addEventListener("click", function(){
+    var username=document.getElementById("li-username").value.trim();
+    var password=document.getElementById("li-password").value;
+    var errEl=document.getElementById("loginErr");
+    var u=getUsers().find(function(x){return x.username.toLowerCase()===username.toLowerCase();});
+    if(!u || u.password!==password){ errEl.textContent=tr("login_error"); errEl.style.display="block"; return; }
+    setSession(u.username); renderAuthArea(); toast(tr("toast_welcome_back")+", "+u.name.split(" ")[0]+"!"); showView("home");
+    document.getElementById("li-username").value=""; document.getElementById("li-password").value="";
+  });
+
+  document.getElementById("registerSubmit").addEventListener("click", function(){
+    var name=document.getElementById("r-name").value.trim();
+    var username=document.getElementById("r-username").value.trim();
+    var phone=document.getElementById("r-phone").value.trim();
+    var password=document.getElementById("r-password").value;
+    var errEl=document.getElementById("regErr");
+    if(!name || !username || !password){ errEl.textContent=tr("register_error_fill"); errEl.style.display="block"; return; }
+    if(password.length<4){ errEl.textContent=tr("register_error_short"); errEl.style.display="block"; return; }
+    var users=getUsers();
+    if(users.some(function(u){return u.username.toLowerCase()===username.toLowerCase();})){ errEl.textContent=tr("register_error_taken"); errEl.style.display="block"; return; }
+    errEl.style.display="none";
+    users.push({username:username, password:password, name:name, phone:phone||"—", joinedAt:Date.now()});
+    setUsers(users); setSession(username); renderAuthArea();
+    toast(tr("toast_account_created")); showView("home");
+    ["r-name","r-username","r-phone","r-password"].forEach(function(id){document.getElementById(id).value="";});
+  });
+
+  /* ================= global nav ================= */
+  document.getElementById("logoBtn").onclick=function(){ showView("home"); };
+  document.getElementById("sellBtn").onclick=function(){ requireAuthThen(function(){ showView("sell"); }); };
+  document.getElementById("heroSellBtn").onclick=function(){ requireAuthThen(function(){ showView("sell"); }); };
+  document.getElementById("heroBrowseBtn").onclick=function(){ document.getElementById("productFeed").scrollIntoView({behavior:"smooth", block:"start"}); };
+  document.getElementById("searchInput").addEventListener("input", function(e){ state.query=e.target.value; showView("home"); renderGrid(); });
+  document.getElementById("sortSel").addEventListener("change", function(e){ state.sort=e.target.value; renderGrid(); });
+  document.getElementById("langSel").addEventListener("change", function(e){
+    currentLang = e.target.value; try{ localStorage.setItem(LS_LANG, currentLang); }catch(err){}
+    applyLang();
+  });
+
+  /* ================= init ================= */
+  currentLang = safeGet(LS_LANG, null) || "en";
+  populateCategorySelect(); populateCitySelect(); populateConditionSelect();
+  applyLang();
+})();
+</script>
+</body>
+</html>
